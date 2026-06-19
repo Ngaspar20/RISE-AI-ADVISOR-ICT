@@ -1,15 +1,15 @@
 """
 period_utils.py
 ───────────────
-Utilitários para cálculo do período de análise bissemanal.
+Utilitários para cálculo do período de análise.
 
-Lógica:
-  - Período actual   = [upload_date - 14 dias, upload_date - 1 dia]
-  - Período anterior = [upload_date - 42 dias, upload_date - 15 dias]  (4 semanas antes)
+Lógica (baseada na última data dos dados, não na data de upload):
+  - Período actual   = [last_date - 27 dias, last_date]  (4 semanas até ao fim dos dados)
+  - Período anterior = [last_date - 55 dias, last_date - 28 dias]  (4 semanas antes)
 
 Usado para garantir que:
-  - Métricas e sinalizações = apenas as 2 semanas actuais
-  - Tendência               = 2 semanas actuais vs 4 semanas anteriores
+  - Métricas e sinalizações = as 4 semanas mais recentes dos dados
+  - Tendência               = 4 semanas actuais vs 4 semanas anteriores
 """
 
 from datetime import date, timedelta
@@ -17,25 +17,38 @@ from typing import Optional, Tuple
 import pandas as pd
 
 
-def get_analysis_window(upload_date: Optional[date] = None) -> Tuple[date, date]:
+def get_last_date(df: pd.DataFrame, date_col: str = "test_date") -> Optional[date]:
     """
-    Calcula o período de análise de 2 semanas.
+    Extrai a data mais recente do dataset (máximo da coluna de data).
+    Devolve None se a coluna não existir ou não tiver datas válidas.
+    """
+    if date_col not in df.columns:
+        return None
+    dates = pd.to_datetime(df[date_col], errors="coerce").dropna()
+    if dates.empty:
+        return None
+    return dates.max().date()
+
+
+def get_analysis_window(last_date: Optional[date] = None) -> Tuple[date, date]:
+    """
+    Calcula o período de análise de 4 semanas com base na última data dos dados.
 
     Parâmetros
     ----------
-    upload_date : data de upload do CSV (por defeito: hoje)
+    last_date : última data presente no dataset (por defeito: hoje)
 
     Devolve
     -------
     (period_start, period_end) — ambos inclusive
     """
-    ref = upload_date or date.today()
-    period_end   = ref - timedelta(days=1)       # dia anterior ao upload
-    period_start = ref - timedelta(days=14)      # 14 dias antes (2 semanas)
+    ref = last_date or date.today()
+    period_end   = ref                           # última data dos dados
+    period_start = ref - timedelta(days=27)      # 4 semanas (28 dias) antes
     return period_start, period_end
 
 
-def get_trend_window(upload_date: Optional[date] = None) -> Tuple[date, date]:
+def get_trend_window(last_date: Optional[date] = None) -> Tuple[date, date]:
     """
     Calcula o período de comparação para tendência (4 semanas anteriores ao período actual).
 
@@ -43,10 +56,9 @@ def get_trend_window(upload_date: Optional[date] = None) -> Tuple[date, date]:
     -------
     (trend_start, trend_end) — as 4 semanas antes do período actual
     """
-    ref = upload_date or date.today()
-    period_start, _ = get_analysis_window(upload_date)
+    period_start, _ = get_analysis_window(last_date)
     trend_end   = period_start - timedelta(days=1)
-    trend_start = ref - timedelta(days=14 + 28)  # 6 semanas antes do upload
+    trend_start = trend_end - timedelta(days=27)  # 4 semanas antes do período actual
     return trend_start, trend_end
 
 

@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from core.data_loader import load_csv_from_bytes
 from core.data_quality import run_quality_checks
-from core.period_utils import get_analysis_window, get_trend_window, filter_to_period, period_label
+from core.period_utils import get_last_date, get_analysis_window, get_trend_window, filter_to_period, period_label
 
 st.set_page_config(page_title="Carregar Dados — RISE ICT", page_icon="📤", layout="wide")
 
@@ -35,19 +35,19 @@ if uploaded_file is not None:
             df = load_csv_from_bytes(file_bytes, filename=uploaded_file.name)
             quality_report = run_quality_checks(df)
 
-            # Período de análise: 2 semanas anteriores à data de upload
-            upload_date  = date.today()
-            p_start, p_end = get_analysis_window(upload_date)
-            t_start, t_end = get_trend_window(upload_date)
+            # Período de análise: 4 semanas até à última data dos dados
+            last_date    = get_last_date(df) or date.today()
+            p_start, p_end = get_analysis_window(last_date)
+            t_start, t_end = get_trend_window(last_date)
             df_period = filter_to_period(df, p_start, p_end)
             df_trend  = filter_to_period(df, t_start, t_end)
 
             st.session_state.df                    = df           # histórico completo
-            st.session_state.df_period             = df_period    # 2 semanas actuais
+            st.session_state.df_period             = df_period    # 4 semanas actuais
             st.session_state.df_trend              = df_trend     # 4 semanas anteriores
             st.session_state.period_start          = p_start
             st.session_state.period_end            = p_end
-            st.session_state.upload_date           = upload_date
+            st.session_state.upload_date           = last_date
             st.session_state.quality_report        = quality_report
             st.session_state.last_upload_filename  = uploaded_file.name
 
@@ -64,16 +64,17 @@ if uploaded_file is not None:
     n_periodo = len(df_period)
     st.info(
         f"📅 **Período de análise:** {period_label(p_start, p_end)}  "
-        f"({n_periodo:,} registos no período | {len(df):,} no total do CSV)"
+        f"(4 semanas até {last_date.strftime('%d/%m/%Y')} — última data dos dados)  "
+        f"| {n_periodo:,} registos no período | {len(df):,} no total"
     )
     if n_periodo == 0:
         st.warning(
-            "⚠️ Nenhum registo encontrado nas últimas 2 semanas. "
-            "Verifique as datas no CSV ou ajuste o período de análise."
+            "⚠️ Nenhum registo encontrado nas últimas 4 semanas dos dados. "
+            "Verifique as datas no ficheiro."
         )
 
     col1, col2, col3, col4, col5 = st.columns(5)
-    col1.metric("Contactos (2 semanas)", f"{n_periodo:,}")
+    col1.metric("Contactos (4 semanas)", f"{n_periodo:,}")
     col2.metric("Conselheiros", df_period["counselor"].nunique() if n_periodo > 0 else 0)
     col3.metric("Unidades Sanitárias", df_period["facility"].nunique() if n_periodo > 0 else 0)
     col4.metric("Distritos", df_period["district"].nunique() if n_periodo > 0 else 0)
@@ -129,4 +130,4 @@ if uploaded_file is not None:
         hide_index=True,
     )
 
-    st.caption(f"Mostrando os primeiros 100 de {len(preview_df):,} registos par
+    st.caption(f"Mostrando os primeiros 100 de {len(preview_df):,} registos para a província seleccionada.")
