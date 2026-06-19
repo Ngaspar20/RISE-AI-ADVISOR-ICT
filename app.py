@@ -73,8 +73,13 @@ st.markdown("""
 
 # ─── Barra lateral ────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.image("https://www.jhpiego.org/wp-content/uploads/2018/11/jhpiego-logo.png",
-             width=150, use_container_width=False)
+    logo_path = Path(__file__).parent / "Jhpiego_Logo_Digital.jpg"
+    if not logo_path.exists():
+        logo_path = Path(__file__).parent / "assets" / "jhpiego_logo.png"
+    if logo_path.exists():
+        st.image(str(logo_path), use_container_width=True)
+    else:
+        st.markdown("**jhpiego**")
     st.markdown("---")
     st.markdown("### 🏥 RISE ICT Advisor")
     st.markdown("Plataforma de supervisão inteligente")
