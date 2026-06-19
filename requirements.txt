@@ -1,0 +1,23 @@
+# Core
+streamlit>=1.35.0
+pandas>=2.0.0
+numpy>=1.26.0
+
+# Visualisation
+plotly>=5.22.0
+
+# AI / LLM
+anthropic>=0.28.0
+
+# PDF generation
+fpdf2>=2.7.9
+
+# Scheduling
+APScheduler>=3.10.4
+
+# Config
+PyYAML>=6.0.1
+
+# Email (stdlib smtplib used; no extra package needed)
+# but we pin python-dotenv for local .env loading
+python-dotenv>=1.0.1

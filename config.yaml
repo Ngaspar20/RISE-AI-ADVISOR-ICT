@@ -1,0 +1,84 @@
+# ─────────────────────────────────────────────
+# RISE AI Advisor — Programme Configuration
+# Edit thresholds, targets, and column mappings here.
+# ─────────────────────────────────────────────
+
+programme:
+  name: "RISE ICT Programme"
+  owner: "JHPIEGO"
+  provinces: ["ZAMBEZIA", "MANICA"]
+
+# ─── Performance Thresholds ───────────────────
+thresholds:
+  # Red flag: counselor/facility performing this % below median
+  below_median_flag_pct: 10          # flag if ≥10% below median
+
+  # Absolute floor targets (secondary check)
+  linkage_rate_target: 85            # % of HIV+ contacts linked
+  consent_rate_target: 90            # % of eligible contacts consenting
+  testing_completion_target: 95      # % of consented contacts tested
+  turnaround_days_target: 3          # median days consent → test
+
+  # Escalation trigger: week-over-week drop
+  linkage_drop_escalation_pct: 15    # alert if linkage drops >15% WoW
+
+  # Data quality alert threshold
+  data_quality_alert_pct: 20         # pause metrics if >20% records affected
+
+  # Minimum records to calculate metrics (avoid noise from 1-2 contacts)
+  min_records_for_metrics: 5
+
+# ─── Column Mapping ───────────────────────────
+# Maps internal field names → CSV column names from DHIS2 export
+columns:
+  province: "Provincia"
+  district: "Distrito"
+  facility: "US"
+  counselor: "HIV - Conselheiro (a)"
+  index_case_id: "HIV - Código do caso índice"
+  offer_date: "Data da oferta"
+  elicitation_date: "Data elicitação"
+  contact_type: "HIV - Tipo de contacto"
+  contact_sex: "HIV - Sexo do contacto"
+  contact_age: "HIV - Idade do contacto"
+  contact_age_months: "HIV - Idade em meses"
+  eligible: "HIV - Elegível a testagem"
+  contact_consent: "HIV - Contacto consente referencia/testagem"
+  known_status: "HIV - Estado Conhecido"
+  test_result: "HIV - Resultado do teste"
+  test_date: "HIV - Data de Testagem"
+  linkage: "HIV - Ligação a unidade sanitária"
+  consultation_date: "HIV - Data da 1ª consulta"
+  nid: "HIV - NID"
+  ref_service: "HIV -  Referencia para Servico"
+  pregnant_lactating: "Grávida/lactante"
+  patient_type: "Tipo de utente"
+  visit_date: "HIV -  Data de Visita"
+
+# ─── Value Mappings ───────────────────────────
+values:
+  positive_result: "HIV Positivo"
+  negative_result: "HIV Negativo"
+  consent_yes: "Sim"
+  consent_no: "Não"
+  linked_same_facility: "Nesta US"
+  linked_other_facility: "Noutra US"
+
+# ─── Scheduling ───────────────────────────────
+schedule:
+  # Day of week for automated analysis (0=Monday, 1=Tuesday...)
+  analysis_day: 0           # Monday
+  analysis_hour: 6          # 06:00 AM
+  analysis_minute: 0
+
+  # Output delivery day/time
+  supervisor_brief_day: 2   # Wednesday
+  supervisor_brief_hour: 8  # 08:00 AM
+  central_report_day: 2     # Wednesday
+  central_report_hour: 13   # 01:00 PM
+
+# ─── Output Settings ──────────────────────────
+output:
+  pdf_logo_path: "assets/jhpiego_logo.png"   # optional
+  max_red_flags_per_brief: 5
+  language: "pt"    # pt = Portugues
